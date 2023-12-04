@@ -96,7 +96,7 @@ Stream: `order-{id}`
 {
     "customerId": string,
     "pizzas": [
-        "id": number,
+        "pizzaId": number,
         "size": string,
         "sauce"; string,
         "cheeseQuantity": string,
@@ -118,7 +118,7 @@ Stream: `order-{id}`
         "zipCode": string
     },
     "pizzas": [
-        "id": number,
+        "pizzaId": number,
         "size": string,
         "sauce"; string,
         "cheeseQuantity": string,
@@ -133,7 +133,7 @@ Stream: `order-{id}`
 ```
 {
     "pizzas": [
-        "id": number,
+        "pizzaId": number,
         "size": string,
         "sauce"; string,
         "cheeseQuantity": string,

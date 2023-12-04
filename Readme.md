@@ -51,7 +51,8 @@ Import `/insomnia/Insomnia_2023-11-22.yaml` to get starter requests.
 Run the Evntd.Bogus project to populate the EventStore with a bunch of streams to play with.
 
 ```
-dotnet run --project ./src/Evntd.Bogus
+cd ./src/Evntd.Bogus
+dotnet run
 ```
 
 Review the following stream events that are generated.

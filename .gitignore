@@ -1,0 +1,10 @@
+.vs/
+bin/
+obj/
+TestResults/
+*.trx
+*.jfm
+*.dbmdl
+*.csproj.user
+*.sqlproj.user
+*.fsproj.user

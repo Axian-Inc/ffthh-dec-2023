@@ -1,0 +1,49 @@
+﻿
+
+.the-horns-right {
+}
+.the-horns-left {
+    display: inline-block;
+    transform: scale(-1,1);
+}
+
+.parameter {
+    display: grid;
+    grid-template-columns: 25% 35% 20% 20%;
+    grid-template-rows: auto;
+    border-top: 1px solid black;
+    padding-top: 1em;
+}
+
+.parameter > .default::after {
+    content: '(default)';
+    color: darkgray;
+    padding-left: 0.5em;
+    font-size: 8pt
+}
+
+.parameter > .optional {
+    flex: 1;
+    color: dodgerblue;
+}
+.parameter > .optional::before {
+    content: 'optional'
+}
+
+.parameter > .required {
+    flex: 1;
+    color: #d81b60;
+}
+.parameter > .required::before {
+    content: 'required'
+}
+
+.parameter > .desc {
+    grid-column-start: 1;
+    grid-column-end: 5;
+    margin: 1.0rem 0;
+}
+
+.parameter > .notice::before {
+    content: '⚠️'
+}

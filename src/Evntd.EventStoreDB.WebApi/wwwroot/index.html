@@ -1,0 +1,583 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Evntd EventStoreDB</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+    <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+    <header>
+        <h1><span class="the-horns-right">🤘</span>😖<span class="the-horns-left">🤘</span> Event Sourcing</h1>
+    </header>
+
+    <p>
+        This web api is a thin wrapper around the <a href="https://developers.eventstore.com/clients/grpc/">EventStore gRPC client</a>.
+        It provides a few simple operations for appending and reading events.  This is more of a learning aide than anything else,
+        but could prove useful for prototyping projections.
+    </p>
+    <p>
+        <a href="tips.html">Additional information, tips and tricks</a>
+    </p>
+    
+    <nav>
+        <ul>
+            <li><a href="#append-to-stream">Append Events</a></li>
+            <li><a href="#read-stream">Read Stream</a></li>
+            <li><a href="#read-all">Read All</a></li>
+            <li><a href="#read-event">Read Event</a></li>
+            <li><a href="#projection-by-category">Projection: By Category</a></li>
+            <li><a href="#projection-by-correlation-id">Projection: By Correlation Id</a></li>
+            <li><a href="#projection-by-event-type">Projection: By EventType</a></li>
+            <li><a href="#projection-stream-by-category">Projection: Stream By Category</a></li>
+            <li><a href="#projection-streams">Projection: Streams</a></li>
+        </ul>
+    </nav>
+    
+
+    <div id="append-to-stream">
+        <h2>Append Events</h2>
+        <p>Appends a list of events to a stream.</p>
+        <pre>POST /streams/{stream}</pre>
+        <h3 id="append-to-stream-params">Parameters</h3>
+        <div id="append-to-stream-path-params">
+            <h4>Path parameters</h4>
+            <div id="append-to-stream-path-params-stream" class="parameter">
+                <code class="name">stream</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span></span>
+                <p class="desc">The name of the event stream.</p>
+            </div>
+        </div>
+        <div id="append-to-stream-headers">
+            <h4>Headers</h4>
+            <div id="append-to-stream-headers-expected-revision" class="parameter">
+                <code class="name">ExpectedRevision</code>
+                <span class="type">number</span>
+                <span class="optional"></span>
+                <span></span>
+                <p class="desc">
+                    The last event number of the stream.
+                    The append operation will only succeeded if the expected revision value matches.
+                    This is used for <a href="https://en.wikipedia.org/wiki/Optimistic_concurrency_control">optimistic concurrency control</a>.
+                    If the expected revision is wrong, a <code>WrongExpectedVersionException</code> is thrown and the API responds with <code>409 Conflict</code>.
+                </p>
+            </div>
+            <div id="append-to-stream-headers-expected-state" class="parameter">
+                <code class="name">ExpectedState</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">Any</span>
+                <p class="desc">
+                    Valid values are <code>Any</code>, <code>NoStream</code>, and <code>StreamExists</code>.
+                    <code>NoStream</code> is used to assert the stream does not exist, otherwise fails with <code>409 Conflict</code>.
+                    <code>StreamExists</code> is used to assert the stream exists, otherwise fails with <code>409 Conflict</code>,
+                    and also gives the following error message, which is rather misleading.
+                </p>
+                <p class="desc">
+                    <code>Append failed due to WrongExpectedVersion. Stream: test-3, Expected version: None, Actual version: None</code>
+                </p>
+            </div>
+        </div>
+        <div id="append-to-stream-body">
+            <h4>Body</h4>
+            <div>
+                <pre>[{
+    "id": uuid,
+    "type": string,
+    "data": any,
+    "metadata": any
+}, ...]</pre>
+                <h4>Body Schema</h4>
+                <pre class="body-schema">{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": { 
+        "type": "string",
+        "format": "uuid"
+      },
+      "type": { "type": "string" },
+      "data": { },
+      "metadata": { }
+    },
+    "required": ["type"],
+    "additionalProperties": false
+  }
+}</pre>
+            </div>
+        </div>
+        <h3 id="read-stream-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>200 OK</td><td>Saul Goodman</td></tr>
+                <tr><td>400 BAD REQUEST</td><td>Invalid request body. Fix and try again.</td></tr>
+                <tr><td>409 CONFLICT</td><td>Invalid precondition, expected revision or state.</td></tr>
+                <tr><td>503 SERVICE UNAVAILABLE</td><td>The api cannot communicate with the EventStore.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="read-stream">
+        <h2>Read Stream</h2>
+        <p>Reads a list of events from a stream.</p>
+        <pre>GET /streams/{stream}</pre>
+
+        <h3 id="read-stream-params">Parameters</h3>
+        <div id="read-stream-path-params">
+            <h4>Path parameters</h4>
+            <div id="read-stream-path-params-stream" class="parameter">
+                <code class="name">stream</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span></span>
+                <p class="desc">The name of the event stream.</p>
+            </div>
+        </div>
+
+        <!-- Read Stream - Query -->
+        <div id="read-stream-query-params">
+            <h4>Query parameters</h4>
+
+            <!-- Read Stream - Query - direction -->
+            <div id="read-stream-query-params-direction" class="parameter">
+                <code class="name">d | direction</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">forwards</span>
+                <p class="desc">
+                    Valid values are <code>forwards</code> and <code>backwards</code>.
+                    When <code>forwards</code> is used, the events will be in ascending order by event number.
+                    When <code>backwards</code> is used, the events will be in descending order by event number.
+                </p>
+            </div>
+
+            <!-- Read Stream - Query - revision -->
+            <div id="read-stream-query-params-revision" class="parameter">
+                <code class="name">r | revision</code>
+                <span class="type">string or number</span>
+                <span class="optional"></span>
+                <span class="default">start</span>
+                <p class="desc">
+                    The event stream revision (i.e. Event number) where reading will begin.
+                    Valid values are 0 to Int64.MaxValue, <code>start</code> or <code>end</code>.
+                </p>
+                <p class="desc notice">
+                    This web api makes <code>start</code> and <code>end</code> contextual based
+                    on the <code>direction</code>. When reading <code>forwards</code>, <code>start</code> is the
+                    first event of the stream, and <code>end</code> is the last event. This is
+                    reversed when reading <code>backwards</code>, where <code>start</code> is
+                    the last event and <code>end</code> is the first event.
+                    When using the gRPC client reading events <code>backwards</code> from the <code>start</code>
+                    or reading <code>forwards</code> from then <code>end</code> returns an empty list of events.
+                </p>
+            </div>
+
+            <!-- Read Stream - Query - count -->
+            <div id="read-stream-params-query-count" class="parameter">
+                <code class="name">c | count</code>
+                <span class="type">number</span>
+                <span class="optional"></span>
+                <span class="default">100</span>
+                <p class="desc">The maximum number of events to read from the event stream.</p>
+                <p class="desc notice">
+                    The EventStore gRPC client defaults to <code>Int64.MaxValue</code>. I personally, will not be
+                    making event streams with that many events. Shooting for no more than 100 events per stream
+                    is a good target to aim for, but a few hundred events isn't unreasonable.
+                </p>
+            </div>
+
+            <!-- Read Stream - Query - link -->
+            <div id="read-stream-params-query-resolvelinks" class="parameter">
+                <code class="name">l | resolvelinks</code>
+                <span class="type">boolean</span>
+                <span class="optional"></span>
+                <span class="default">true</span>
+                <p class="desc">Determines if link events are resolved. When true, both the link and event the link references are returned in the response.</p>
+                <p class="desc">Valid values are <code>false</code> or <code>true</code>, <code>off</code> or <code>on</code>, <code>0</code> or <code>1</code>.</p>
+            </div>
+
+            <!-- Read Stream - Query - deadline -->
+            <div id="read-stream-params-query-deadline" class="parameter">
+                <code class="name">deadline</code>
+                <span class="type">number or string</span>
+                <span class="optional"></span>
+                <span></span>
+                <p class="desc">Sets a maxiumum amount of time the system may use to query the results from the EventStore.</p>
+                <p class="desc">You may specify this value as a number in milliseconds or a <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings">.NET TimeSpan format string</a>.</p>
+                <p class="desc notice">I don't know a great use for this.</p>
+            </div>
+
+            <!-- Read Stream - Query - scope -->
+            <div id="read-stream-params-query-scope" class="parameter">
+                <code class="name">s | scope</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">resolved</span>
+                <p class="desc">Valid values are <code>resolved</code>, <code>event</code>, <code>data</code>, <code>metadata</code>.</p>
+                <section id="read-stream-params-query-scope-values" class="desc">
+                    This is a feature of this web api to provide easier access to specific portions of the events. The EventStore gRPC
+                    client <u>does not</u> define a <code>scope</code> parameter when reading a stream.
+                    <p>
+                        <h5><code>resolved</code></h5>
+                        Returns events serialized as <code>EventStore.Client.ResolvedEvent</code>.
+                        If the event is a link event (<code>eventType="$>"</code>) and the link event when <code>resolvelinks=true</code> the link event will be included as well.
+                    </p>
+                    <p>
+                        <h5><code>event</code></h5>
+                        Returns events serialized as <code>EventStore.Client.EventRecord</code>.
+                        If the event is a link event (<code>eventType="$>"</code>) and the link resolution is off
+                        <code>resolvelinks=false</code> the link event will be returned, when link resolution is on
+                        the event the link references will be returned.
+                    </p>
+                    <p>
+                        <h5><code>data</code></h5>
+                        Returns the serialized event data.
+                        If the event is a link event (<code>eventType="$>"</code>) and link resolution is off,
+                        this will return a list of strings in the format <code>{revision}@{stream}</code>.
+                    </p>
+                    <p>
+                        <h5><code>metadata</code></h5>
+                        Returns the serialized metadata.
+                    </p>
+                </section>
+            </div>
+        </div>
+        <h3 id="read-stream-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>200 OK</td><td>Saul Goodman</td></tr>
+                <tr><td>404 NOT FOUND</td><td>The event stream does not exist.</td></tr>
+                <tr><td>503 SERVICE UNAVAILABLE</td><td>The api cannot communicate with the EventStore.</td></tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div id="read-all">
+        <h2>Read All</h2>
+        <p>Reads a list of events from the system $all stream.</p>
+        <pre>GET /streams/$all</pre>
+        <h3 id="read-all-params">Parameters</h3>
+        <div>
+            <h4 id="read-all-query-params">Query parameters</h4>
+            <div id="read-all-query-params-direction" class="parameter">
+                <code class="name">d | direction</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">forwards</span>
+                <p class="desc">
+                    Valid values are <code>forwards</code> and <code>backwards</code>.
+                    When <code>forwards</code> is used, the events will be in ascending order by event number.
+                    When <code>backwards</code> is used, the events will be in descending order by event number.
+                </p>
+            </div>
+            <div id="read-all-query-params-position" class="parameter">
+                <code class="name">p | position</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">start</span>
+                <p class="desc">The event stream position where reading will begin.</p>
+                <p class="desc">
+                    EventStore positions are opaque strings that take the form <code>C:#/P:#</code>. The number
+                    value following <code>C</code> (commit position) and <code>P</code> (prepare position) are typically the same in single node
+                    development configurations, however that will not hold true for production ready clustered
+                    configurations.
+                </p>
+                <p class="desc notice">
+                    This web api makes <code>start</code> and <code>end</code> contextual based
+                    on the <code>direction</code>. When reading <code>forwards</code>, <code>start</code> is the
+                    first event of the stream, and <code>end</code> is the last event. This is
+                    reversed when reading <code>backwards</code>, where <code>start</code> is
+                    the last event and <code>end</code> is the first event.
+                    When using the gRPC client reading events <code>backwards</code> from the <code>start</code>
+                    or reading <code>forwards</code> from then <code>end</code> returns an empty list of events.
+                </p>
+            </div>
+            <div id="read-all-query-params-count" class="parameter">
+                <code class="name">c | count</code>
+                <span class="type">number</span>
+                <span class="optional"></span>
+                <span class="default">100</span>
+                <p class="desc">The maximum number of events to read from the event stream.</p>
+                <p class="desc notice">The EventStore gRPC client defaults to <code>Int64.MaxValue</code>.</p>
+            </div>
+            <div id="read-all-query-params-resolvelinks" class="parameter">
+                <code class="name">l | resolvelinks</code>
+                <span class="type">boolean</span>
+                <span class="optional"></span>
+                <span class="default">true</span>
+                <p class="desc">Determines if link events are resolved. When true, both the link and event the link references are returned in the response.</p>
+                <p class="desc">Valid values are <code>false</code> or <code>true</code>, <code>off</code> or <code>on</code>, <code>0</code> or <code>1</code>.</p>
+            </div>
+            <div id="read-all-query-params-deadline" class="parameter">
+                <code class="name">deadline</code>
+                <span class="type">number or string</span>
+                <span class="optional"></span>
+                <span><!-- no default --></span>
+                <p class="desc">Sets a maxiumum amount of time the system may use to query the results from the EventStore.</p>
+                <p class="desc">You may specify this value as a number in milliseconds or a <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings">.NET TimeSpan format string</a>.</p>
+            </div>
+            <div id="read-stream-params-query-scope" class="parameter">
+                <code class="name">s | scope</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">resolved</span>
+                <p class="desc">Valid values are <code>resolved</code>, <code>event</code>, <code>data</code>, <code>metadata</code>.</p>
+            </div>
+        </div>
+        <h3 id="read-all-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>200 OK</td><td>Saul Goodman</td></tr>
+                <tr><td>503 SERVICE UNAVAILABLE</td><td>The api cannot communicate with the EventStore.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="read-event">
+        <h2>Read Event</h2>
+        <p>Read a single event from a stream.</p>
+        <pre>GET /streams/{stream}/{revision}</pre>
+        <h3 id="read-event-params">Parameters</h3>
+        <div id="read-event-route-params">
+            <h4>Route parameters</h4>
+            <div id="read-event-route-params-stream" class="parameters">
+                <code class="name">stream</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span></span>
+                <p class="desc">The name of the event stream.</p>
+            </div>
+            <div id="read-event-route-params-revision" class="parameter">
+                <code class="name">revision</code>
+                <span class="type">number or string</span>
+                <span class="required"></span>
+                <span></span>
+                <p class="desc">The event number.</p>
+            </div>
+        </div>        
+        <div>
+            <h4 id="read-event-query-params">Query parameters</h4>
+            <div id="read-event-query-params-resolvelinks" class="parameter">
+                <code class="name">l | resolvelinks</code>
+                <span class="type">boolean</span>
+                <span class="optional"></span>
+                <span class="default">true</span>
+                <p class="desc">Determines if link events are resolved. When true, both the link and event the link references are returned in the response.</p>
+                <p class="desc">Valid values are <code>false</code> or <code>true</code>, <code>off</code> or <code>on</code>, <code>0</code> or <code>1</code>.</p>
+            </div>
+            <div id="read-event-query-params-deadline" class="parameter">
+                <code class="name">deadline</code>
+                <span class="type">number or string</span>
+                <span class="optional"></span>
+                <span><!-- no default --></span>
+                <p class="desc">Sets a maxiumum amount of time the system may use to query the results from the EventStore.</p>
+                <p class="desc">You may specify this value as a number in milliseconds or a <a href="https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings">.NET TimeSpan format string</a>.</p>
+            </div>
+            <div id="read-event-params-query-scope" class="parameter">
+                <code class="name">s | scope</code>
+                <span class="type">string</span>
+                <span class="optional"></span>
+                <span class="default">resolved</span>
+                <p class="desc">Valid values are <code>resolved</code>, <code>event</code>, <code>data</code>, <code>metadata</code>.</p>
+            </div>
+        </div>
+        <h3 id="read-all-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>200 OK</td><td>Saul Goodman</td></tr>
+                <tr><td>503 SERVICE UNAVAILABLE</td><td>The api cannot communicate with the EventStore.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="projection-by-category">
+        <h2>Projection: By Category</h2>
+        <p>Reads an event stream containing all the events of the specified category.</p>
+        <pre>GET /projections/by-category/{category}</pre>
+        <h3 id="projection-by-category-params">Parameters</h3>
+        <div>
+            <h4 id="projection-by-category-path-params">Path parameters</h4>
+            <div id="projection-by-category-path-params-category" class="parameter">
+                <code class="name">category</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span><!-- no default --></span>
+                <p class="desc">The category as defined by the system projection <a href="https://developers.eventstore.com/server/v20.10/projections.html#by-category" target="_blank">By category</a>.</p>
+            </div>
+            <h4 id="projection-by-category-query-params">Query parameters</h4>
+            <div>
+                <p>Same as <a href="#read-stream-query-params">Read Stream - Query parameters</a></p>
+            </div>
+        </div>
+        <h3 id="projection-by-category-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>302 FOUND</td><td>Redirects to /streams/$ce-{category}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="projection-by-correlation-id">
+        <h2>Projection: By Correlation Id</h2>
+        <p>
+            Reads an event stream containing all the events that match the specified correlation id.
+            By default, EventStore will link an event to the <code>$bc-{correlationId}</code> stream
+            whenever the metadata of an event contains a value in its <code>$correlationId</code> property.
+            The metadata property used is configurable, by setting the <code>correlationIdProperty</code>
+            in the projection definition.
+        </p>
+        <pre>GET /projections/by-correlation-id/{correlationId}</pre>
+        <h3 id="projection-stream-by-category-params">Parameters</h3>
+        <div>
+            <h4 id="projection-by-correlation-id-path-params">Path parameters</h4>
+            <div id="projection-by-correlation-id-path-params-correlationid" class="parameter">
+                <code class="name">correlationId</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span><!-- no default --></span>
+                <p class="desc">The correlation id type as defined by the system projection <a href="https://developers.eventstore.com/server/v20.10/projections.html#by-correlation-id" target="_blank">By correlation id</a>.</p>
+            </div>
+            <h4 id="projection-by-correlation-id-query-params">Query parameters</h4>
+            <div>
+                <p>Same as <a href="#read-stream-query-params">Read Stream - Query parameters</a></p>
+            </div>
+        </div>
+        <h3 id="projection-by-correlation-id-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>302 FOUND</td><td>Redirects to /streams/$bc-{eventType}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="projection-by-event-type">
+        <h2>Projection: By Event Type</h2>
+        <p>
+            Reads the system stream <code>$et-{eventType}</code> which contains all the
+            events that have a matching event type.
+        </p>
+        <pre>GET /projections/by-event-type/{eventType}</pre>
+        <h3 id="projection-by-event-type-params">Parameters</h3>
+        <div>
+            <h4 id="projection-by-event-type-path-params">Path parameters</h4>
+            <div id="projection-by-event-type-path-params-eventtype" class="parameter">
+                <code class="name">eventType</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span><!-- no default --></span>
+                <p class="desc">The event type as defined by the system projection <a href="https://developers.eventstore.com/server/v20.10/projections.html#by-event-type" target="_blank">By event type</a>.</p>
+            </div>
+            <h4 id="projection-by-event-type-query-params">Query parameters</h4>
+            <div>
+                <p>Same as <a href="#read-stream-query-params">Read Stream - Query parameters</a></p>
+            </div>
+        </div>
+        <h3 id="projection-by-event-type-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>302 FOUND</td><td>Redirects to /streams/$et-{eventType}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="projection-stream-by-category">
+        <h2>Projection: Stream By Category</h2>
+        <p></p>
+        <pre>GET /projections/stream-by-category/{category}</pre>
+        <h3 id="projection-stream-by-category-params">Parameters</h3>
+        <div>
+            <h4 id="projection-stream-by-category-path-params">Path parameters</h4>
+            <div id="projection-stream-by-category-path-params-category" class="parameter">
+                <code class="name">category</code>
+                <span class="type">string</span>
+                <span class="required"></span>
+                <span><!-- no default --></span>
+                <p class="desc">The stream category as defined by the system projection <a href="https://developers.eventstore.com/server/v20.10/projections.html#stream-by-category" target="_blank">Stream by category</a>.</p>
+            </div>
+            <h4 id="projection-stream-by-category-query-params">Query parameters</h4>
+            <div>
+                <p>Same as <a href="#read-stream-query-params">Read Stream - Query parameters</a></p>
+            </div>
+        </div>
+        <h3 id="projection-stream-by-category-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>302 FOUND</td><td>Redirects to /streams/$category-{category}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="projection-streams">
+        <h2>Projection: Streams</h2>
+        <p>
+            Read the system stream <code>$streams</code>.
+            This stream consists of link events. Each link event refers to the first event
+            of a user defined stream.
+        </p>
+        <pre>GET /projections/streams</pre>
+        <h3 id="projection-streams-params">Parameters</h3>
+        <div>
+            <h4 id="projection-streams-query-params">Query parameters</h4>
+            <div>
+                <p>Same as <a href="#read-stream-query-params">Read Stream - Query parameters</a></p>
+            </div>
+        </div>
+        <h3 id="projection-streams-http-responses">HTTP responses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>302 FOUND</td><td>Redirects to /streams/$streams</td></tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

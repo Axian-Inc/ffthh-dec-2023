@@ -1,0 +1,467 @@
+_type: export
+__export_format: 4
+__export_date: 2023-11-22T08:48:26.519Z
+__export_source: insomnia.desktop.app:v8.4.2
+resources:
+  - _id: req_93bd5bc4667f4facb98c79e00f56d1c2
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700642890567
+    created: 1698819732037
+    url: "{{baseUrl}}/streams/{{stream}}"
+    name: Append Events
+    description: Write events at the end of a stream.
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        [
+        	{
+        		"id": "{% uuid 'v4' %}",
+        		"type": "",
+        		"data": {},
+        		"metadata": {
+        			"$correlationId": "{% uuid 'v4' %}",
+        			"createdAt": "{% now 'iso-8601', '' %}"
+        		}
+        	}
+        ]
+    parameters: []
+    headers:
+      - name: Content-Type
+        value: application/json
+        id: pair_017c9a8392c54e31b764679a6cda43fc
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+      - id: pair_9047170319c24aabab649d16d994f939
+        name: ExpectedRevision
+        value: ""
+        description: A non-negative 64 bit signed integer
+        disabled: true
+      - id: pair_fbcfe971621c4f29be691c31727510c2
+        name: ExpectedState
+        value: ""
+        description: Any, NoStream, StreamExists
+        disabled: true
+    authentication: {}
+    metaSortKey: -1698819732037
+    isPrivate: false
+    settingStoreCookies: false
+    settingSendCookies: false
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: false
+    settingFollowRedirects: global
+    _type: request
+  - _id: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    parentId: null
+    modified: 1698819612463
+    created: 1698819612463
+    name: EventStoreDB.WebApi
+    description: ""
+    scope: collection
+    _type: workspace
+  - _id: req_ef962395a3794def8420e7f3c6e54a91
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638748529
+    created: 1700638162829
+    url: "{{baseUrl}}/streams/{{stream}}"
+    name: Read Stream
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819665257.8438
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_dc035e40df0a4b4eb31aa231abdc4e66
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638742844
+    created: 1700256996278
+    url: "{{baseUrl}}/streams/$all"
+    name: Read All
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: position
+        value: ""
+        description: start, end, or "C:#/P:#"
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819598478.6875
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_54b2b010d7d849bd9c3d913778f7a7ee
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638735304
+    created: 1700638225651
+    url: "{{baseUrl}}/streams/{{stream}}/{{revision}}"
+    name: Read Event
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819364751.6406
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: global
+    _type: request
+  - _id: req_7f258d155f724b0398fece1e38970608
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638732272
+    created: 1700638602648
+    url: "{{baseUrl}}/projections/by-category/{{category}}"
+    name: "Projection: By Category"
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819281277.6953
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: on
+    _type: request
+  - _id: req_b7e9519ed7934e53a79de3a7d7be1383
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638725001
+    created: 1700638698790
+    url: "{{baseUrl}}/projections/by-correlation-id/{{correlationId}}"
+    name: "Projection: By Correlation Id"
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819172761.5664
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: on
+    _type: request
+  - _id: req_7af68a25bd2f42fc8634ef9cfca6bb17
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638833854
+    created: 1700638823125
+    url: "{{baseUrl}}/projections/by-event-type/{{eventType}}"
+    name: "Projection: By Event Type"
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819118503.502
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: on
+    _type: request
+  - _id: req_b3eb2f4be9584d1eb103c08b44908b6a
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638873804
+    created: 1700638855938
+    url: "{{baseUrl}}/projections/stream-by-category/{{category}}"
+    name: "Projection: Stream By Category"
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698819091374.4697
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: on
+    _type: request
+  - _id: req_ae877a6944244519bb3ee03248d0131d
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700638914295
+    created: 1700638908545
+    url: "{{baseUrl}}/projections/streams"
+    name: "Projection: Streams"
+    description: ""
+    method: GET
+    body: {}
+    parameters:
+      - id: pair_af80ed4c24164d689d134435b94ab753
+        name: direction
+        value: ""
+        description: forwards or backwards
+        disabled: true
+      - id: pair_1a3a654bc87b406ea17c18453e0cb005
+        name: revision
+        value: ""
+        description: start, end, or a non-negative number
+        disabled: true
+      - id: pair_a17ecdb98183408e8843099985a4b213
+        name: count
+        value: ""
+        description: A non-negative number
+        disabled: true
+      - id: pair_dc1d37ecd57a42299b697f8ee27807c9
+        name: resolvelinks
+        value: ""
+        description: true, on, 1, false, off, 0
+        disabled: true
+      - id: pair_ee2524ba929849229a4719352903aa13
+        name: scope
+        value: ""
+        description: resolved, event, data, metadata
+        disabled: true
+    headers:
+      - name: User-Agent
+        value: insomnia/8.3.0
+        id: pair_c0f703aa708044f98e2f9d6e8184a14c
+    authentication: {}
+    metaSortKey: -1698818343239.2349
+    isPrivate: false
+    settingStoreCookies: true
+    settingSendCookies: true
+    settingDisableRenderRequestBody: false
+    settingEncodeUrl: true
+    settingRebuildPath: true
+    settingFollowRedirects: on
+    _type: request
+  - _id: env_07172857398f05bd6e6be130a1ac957f4075be59
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1700640091066
+    created: 1698819612477
+    name: Base Environment
+    data:
+      scheme: https
+      domain: localhost
+      port: "7177"
+      baseUrl: "{{ _.scheme }}://{{ _.domain }}:{{ _.port }}"
+    dataPropertyOrder:
+      "&":
+        - scheme
+        - domain
+        - port
+        - baseUrl
+    color: null
+    isPrivate: false
+    metaSortKey: 1698819612477
+    _type: environment
+  - _id: jar_07172857398f05bd6e6be130a1ac957f4075be59
+    parentId: wrk_7e3dc616c8194c31a812e2ab24813b0d
+    modified: 1698819612479
+    created: 1698819612479
+    name: Default Jar
+    cookies: []
+    _type: cookie_jar

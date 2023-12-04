@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Evntd EventStoreDB</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css" />
+    <link rel="stylesheet" href="/styles/main.css" />
+</head>
+<body>
+    <header>
+        <h1>EventStoreDB Tips &amp; Tricks</h1>
+    </header>
+    <main>
+
+        <section>
+            <header>
+                <h3>Stream Naming</h3>
+            </header>
+            <p>
+                A stream can be named nearly anything. You could URL encode a space <code>/streams/%20</code>, but that would be rather unwise.
+                Things to consider when coming up with a stream naming strategy:
+            </p>
+            <ul>
+                <li>First character SHOULD NOT be <code>$</code></li>
+                <li>Avoid path separators <code>\</code> and <code>/</code></li>
+                <li>Avoid URL special characters <code>: ? & # %</code></li>
+                <li>Avoid whitespace</li>
+                <li>Case sensitivity</li>
+            </ul>
+
+            <p class="important">
+                Streams which start with dollar sign (<strong>$</strong>) are reserved for EventStore system streams.
+                However, this rule is not enforced.
+            </p>
+
+            <p>
+                A common convention used is <code>{category}-{id}</code> or <code>{type}-{id}</code>.
+                Where <code>id</code> is an integer, a guid or uuid of some sort, or a known string.
+            </p>
+            <p>
+                It can be useful to include a temporal portion to a stream name. <code>{category}-{id}-{timeframe}</code>
+                Many long running processes have natural checkpoints (i.e. closing the books).
+
+                <pre>
+timecard-empl002761-2023_10    // By Month
+invoice-cust000823-2023_10_15  // By Day
+                </pre>
+            </p>
+            <p class="desc notice">
+                The placement of the first hyphen <code>-</code> is important when using system projections. 
+                It is used to combine streams by category. 
+                If necessary the projection definition can be modified to categorize streams differently.
+            </p>
+        </section>
+    </main>
+    <footer>
+    </footer>
+
+</body>
+</html>

@@ -15,6 +15,11 @@ Start the EventStore DB cluster.
 docker-compose -f ./src/EventStoreDB/docker-compose.yml up -d
 ```
 
+For Mac user's with ARM use the following
+```
+docker-compose -f ./src/EventStreoDB/docker-compose-arm.yml up -d
+```
+
 This will open localhost ports [1111-1113] to TCP and [2111-2113] to HTTPS.
 
 Go to the [EventStore dashboard](http://localhost:2113) and check it out.
@@ -33,18 +38,33 @@ Password: Changeit
 
 ### HTTP WebApi
 
-Launch the Evntd.EventStoreDB.WebApi using an IDE or via the command line.
+First verify that you have a valid .NET development certificate setup.
 
+```
+dotnet dev-certs https --check --trust
+```
+
+If you don't have a valid certificate. Run the following.
+```
+dotnet dev-certs https --trust
+```
+
+Launch the Evntd.EventStoreDB.WebApi using an IDE or via the command line.
 ```
 dotnet run --project ./src/Evntd.EventStoreDB.WebApi --launch-profile https
 ```
 
-This should starts a simple web application with some documentation and a web api. The web api is thin wrapper around the EventStoreDB gRPC client.
+Open a browser and navigate to the following URI.
+```
+https://localhost:7177
+```
 
-Review the documentation.
-Try out some manual requests with Insomnia. 
+Review the documentation, then try out some manual requests with Insomnia.
 
-Import `/insomnia/Insomnia_2023-11-22.yaml` to get starter requests.
+Import `/insomnia/Insomnia_2023-11-22.yaml` to get starter requests. Some requests have missing parameter values which you'll need to modify yourself.
+
+⚠️ Disable Certificate Validation
+In Insomnia open **Application > Preferences**, on the **General** tab disable **Validate certificates** in the Request/Response section.
 
 ### Pizza Delivery
 

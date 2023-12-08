@@ -17,13 +17,14 @@ docker-compose -f ./src/EventStoreDB/docker-compose.yml up -d
 
 For Mac user's with ARM use the following
 ```
-docker-compose -f ./src/EventStreoDB/docker-compose-arm.yml up -d
+docker-compose -f ./src/EventStoreDB/docker-compose-arm.yml up -d
 ```
 
 This will open localhost ports [1111-1113] to TCP and [2111-2113] to HTTPS.
 
 Go to the [EventStore dashboard](http://localhost:2113) and check it out.
 
+If you are prompted to authenticate, here are the default credentials.
 ```
 # EventStoreDB default credentials
 Username: Admin

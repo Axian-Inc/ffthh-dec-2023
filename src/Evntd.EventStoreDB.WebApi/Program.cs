@@ -13,6 +13,7 @@ builder.Services.AddEventStoreProblemDetails();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHostedService<PopularToppingsProjection>();
+builder.Services.AddHostedService<FrequentCustomersProjection>();
 
 
 var app = builder.Build();
@@ -37,6 +38,8 @@ app.MapGet("/projections/streams", HandleStreams);
            
 // CUSTOM PROJECTIONS
 app.MapGet("/popular-toppings", HandlePopularToppings);
+app.MapGet("/most-frequent", HandleFrequentVisitors);
+app.MapGet("/most-pizzas", HandleMostPizzas);
 
 app.Run();
 
@@ -112,5 +115,28 @@ static IResult HandlePopularToppings(HttpContext httpContext, IMemoryCache cache
 {
     var toppings = cache.Get<Dictionary<string,int>>(PopularToppingsProjection.ProjectionStateCacheKey);
     var top10 = toppings.OrderByDescending(kvp => kvp.Value).Take(10).Select(kvp => kvp.Key);
+    return Results.Ok(top10);
+}
+
+static IResult HandleFrequentVisitors(HttpContext httpContext, IMemoryCache cache) 
+{
+    var customers = cache.Get<Dictionary<string,FrequentCustomersProjection.CustomerInfo>>(FrequentCustomersProjection.ProjectionStateCacheKey);
+    var top10 = customers
+        .OrderByDescending(kvp => kvp.Value.visits)
+        .ThenByDescending(kvp => kvp.Value.pizzas)
+        .Take(10)
+        .Select(kvp => kvp.Value);
+
+    return Results.Ok(top10);
+}
+
+static IResult HandleMostPizzas(HttpContext httpContext, IMemoryCache cache) 
+{
+    var customers = cache.Get<Dictionary<string,FrequentCustomersProjection.CustomerInfo>>(FrequentCustomersProjection.ProjectionStateCacheKey);
+    var top10 = customers
+        .OrderByDescending(kvp => kvp.Value.pizzas)
+        .ThenBy(kvp => kvp.Value.visits)
+        .Take(10)
+        .Select(kvp => kvp.Value);
     return Results.Ok(top10);
 }

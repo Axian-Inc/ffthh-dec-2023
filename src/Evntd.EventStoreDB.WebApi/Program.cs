@@ -2,12 +2,18 @@ using EventStore.Client;
 using Evntd.EventStoreDB.WebApi.Dto;
 using Evntd.EventStoreDB.WebApi.Extensions;
 using Evntd.EventStoreDB.WebApi.Model;
+using Evntd.EventStoreDB.WebApi.Projections;
 using Hellang.Middleware.ProblemDetails;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEventStoreClient(builder.Configuration.GetConnectionString("EventStore")!);
 builder.Services.AddEventStoreProblemDetails();
+
+builder.Services.AddMemoryCache();
+builder.Services.AddHostedService<PopularToppingsProjection>();
+
 
 var app = builder.Build();
 
@@ -29,6 +35,9 @@ app.MapGet("/projections/by-event-type/{eventType}", HandleByEventType);
 app.MapGet("/projections/stream-by-category/{category}", HandleStreamsByCategory);
 app.MapGet("/projections/streams", HandleStreams);
            
+// CUSTOM PROJECTIONS
+app.MapGet("/popular-toppings", HandlePopularToppings);
+
 app.Run();
 
 static IResult HandleAppendToSystemStream(HttpContext httpContext, string stream)
@@ -96,3 +105,12 @@ static IResult HandleByCorrelationId(HttpContext httpContext, string correlation
 static IResult HandleByEventType(HttpContext httpContext, string eventType) => Results.Redirect($"/streams/$et-{eventType}{httpContext.Request.QueryString}");
 static IResult HandleStreamsByCategory(HttpContext httpContext, string category) => Results.Redirect($"/streams/$category-{category}{httpContext.Request.QueryString}");
 static IResult HandleStreams(HttpContext httpContext) => Results.Redirect($"/streams/$streams{httpContext.Request.QueryString}");
+
+
+
+static IResult HandlePopularToppings(HttpContext httpContext, IMemoryCache cache) 
+{
+    var toppings = cache.Get<Dictionary<string,int>>(PopularToppingsProjection.ProjectionStateCacheKey);
+    var top10 = toppings.OrderByDescending(kvp => kvp.Value).Take(10).Select(kvp => kvp.Key);
+    return Results.Ok(top10);
+}
